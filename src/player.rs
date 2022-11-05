@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use bevy::prelude::*;
-use crate::{GameTextures, WinSize, PLAYER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED};
+use crate::{GameTextures, WinSize, PLAYER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, PLAYER_LASER_SPRITE};
 use crate::components::{Player, Velocity, Movable};
 
 pub struct PlayerPlugin;
@@ -14,7 +14,11 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn player_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>, win_size: Res<WinSize>,) {
+fn player_spawn_system(
+    mut commands: Commands, 
+    game_textures: Res<GameTextures>, 
+    win_size: Res<WinSize>,
+) {
     let bottom = -win_size.h/2.;
     commands.spawn_bundle(SpriteBundle {
         texture: game_textures.player.clone(),
@@ -30,7 +34,10 @@ fn player_spawn_system(mut commands: Commands, game_textures: Res<GameTextures>,
     .insert(Velocity {x: 0.0, y: 0.0});
 }
 
-fn player_keyboard_event_system(kb: Res<Input<KeyCode>>, mut query: Query<&mut Velocity, With<Player>>,) {
+fn player_keyboard_event_system(
+    kb: Res<Input<KeyCode>>, 
+    mut query: Query<&mut Velocity, With<Player>>,
+) {
     if let Ok(mut velocity) = query.get_single_mut() {
         velocity.x = if kb.pressed(KeyCode::Left) {
             -1.
@@ -42,21 +49,33 @@ fn player_keyboard_event_system(kb: Res<Input<KeyCode>>, mut query: Query<&mut V
     }
 }
 
-fn player_fire_system(mut commands: Commands, kb: Res<Input<KeyCode>>, game_textures: Res<GameTextures>, query: Query<&Transform, With<Player>>,) {
+fn player_fire_system(
+    mut commands: Commands, 
+    kb: Res<Input<KeyCode>>, 
+    game_textures: Res<GameTextures>, 
+    query: Query<&Transform, With<Player>>,
+) {
     if let Ok(player_tf) = query.get_single() {
         if kb.just_pressed(KeyCode::Space) {
             let (x, y) = (player_tf.translation.x, player_tf.translation.y);
-            commands.spawn_bundle(SpriteBundle {
-                texture: game_textures.player_laser.clone(),
-                transform: Transform {
-                    translation: Vec3::new(x, y, 0.0),
-                    scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
+            let mut spawn_laser = |x_offset: f32, y_offset: f32| {
+                commands
+                .spawn_bundle(SpriteBundle {
+                    texture: game_textures.player_laser.clone(),
+                    transform: Transform {
+                        translation: Vec3::new(x+x_offset, y-y_offset, 0.0),
+                        scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            })
-            .insert(Movable {auto_despawn: true})
-            .insert(Velocity {x: 0.0, y: 1.0});
+                })
+                .insert(Movable {auto_despawn: true})
+                .insert(Velocity {x: 0.0, y: 1.0});
+            };
+            let x_offset = PLAYER_SIZE.0 / 2. * SPRITE_SCALE - 5.;
+            let y_offset = (PLAYER_SIZE.1 / 2. - 60.) * SPRITE_SCALE;
+            spawn_laser(x_offset, y_offset);
+            spawn_laser(-x_offset, y_offset);
         }
     }
 }
