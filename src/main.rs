@@ -16,7 +16,7 @@ use enemy::EnemyPlugin;
 // region:  ---CONSTANTS
 const PLAYER_SPRITE: &str = "shooter.png";
 const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
-const ENEMY_SPRITE: &str = "enemy_a_01.png";
+const ENEMY_SPRITE: &str = "alien.png";
 const ENEMY_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_SIZE: (f32, f32) = (128., 128.);
 const ENEMY_SIZE: (f32, f32) = (93., 84.);
