@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use bevy::prelude::*;
-use crate::{GameTextures, WinSize, PLAYER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, PLAYER_LASER_SPRITE};
-use crate::components::{Player, Velocity, Movable};
+use crate::{GameTextures, WinSize, PLAYER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, PLAYER_LASER_SPRITE, PLAYER_LASER_SIZE};
+use crate::components::{Player, Velocity, Movable, SpriteSize, FromPlayer, Laser};
 
 pub struct PlayerPlugin;
 
@@ -29,6 +29,7 @@ fn player_spawn_system(
         },
         ..Default::default()
     })
+    .insert(SpriteSize::from(PLAYER_SIZE))    
     .insert(Player)
     .insert(Movable {auto_despawn: false})
     .insert(Velocity {x: 0.0, y: 0.0});
@@ -63,14 +64,17 @@ fn player_fire_system(
                 .spawn_bundle(SpriteBundle {
                     texture: game_textures.player_laser.clone(),
                     transform: Transform {
-                        translation: Vec3::new(x+x_offset, y-y_offset, 0.0),
+                        translation: Vec3::new(x+x_offset, y-y_offset, 10.0),
                         scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .insert(Movable {auto_despawn: true})
-                .insert(Velocity {x: 0.0, y: 1.0});
+                .insert(Velocity {x: 0.0, y: 1.0})
+                .insert(SpriteSize::from(PLAYER_LASER_SIZE))
+                .insert(FromPlayer)
+                .insert(Laser);
             };
             let x_offset = PLAYER_SIZE.0 / 2. * SPRITE_SCALE - 5.;
             let y_offset = (PLAYER_SIZE.1 / 2. - 60.) * SPRITE_SCALE;
